@@ -35,10 +35,10 @@ dk = DirectKinematic([j0, j1, j2])
 #
 # print(np.linalg.pinv(jacobian))
 
-initial_guess = [0, 3.18, 0]
+initial_guess = [0, 2.8, 0]
 theta_i = initial_guess
 
-epsilon = 1e-2
+epsilon = 1e-3
 error = 1
 
 desired_pose = [
@@ -63,7 +63,7 @@ while error > epsilon:
 
 	print(pose_error)
 
-	theta_i += .1 * (jacobian_pinv @ pose_error)
+	theta_i += (jacobian_pinv @ pose_error)
 	error = np.sum(np.abs(pose_error))
 
 print(' ')
