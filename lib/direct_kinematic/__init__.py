@@ -34,8 +34,13 @@ class Link:
 		
 		return rz @ tz @ tx @ rx
 	
-	def get_tm(self):
-		return self.transformation_matrix
+	def get_tm(self, joint_angles):
+		tm = self.transformation_matrix
+		
+		if joint_angles is not None:
+			tm = tm.subs(joint_angles)
+			
+		return tm
 	
 	"""
 		This function computes the homogeneous transformation matrix of the
@@ -58,17 +63,10 @@ class Link:
 
 
 def compute_transformation(links, start, end, joint_angles=None):
-	tm = links[start].get_tm()
-	
-	if joint_angles is not None:
-		tm = tm.subs(joint_angles)
+	tm = links[start].get_tm(joint_angles)
 	
 	for i in range(start + 1, end):
-		tm_i = links[i].get_tm()
-		
-		if joint_angles is not None:
-			tm_i = tm_i.subs(joint_angles)
-		
+		tm_i = links[i].get_tm(joint_angles)
 		tm = tm @ tm_i
 	
 	return tm
@@ -133,17 +131,20 @@ class DirectKinematic:
 		
 		for i in range(len_joints):
 			# compute the transformation from 0 to ith link
-			transformation = self.get_transformation(0, i + 1, joint_angles_subs(joint_angles))
+			transformation = self.get_transformation(i, i + 1, joint_angles_subs(joint_angles))
 			z_i_minus_1 = transformation[:3, 2].T
-			
+
 			# All the joints are rotational (in this case)
 			# if self.links[i].link_type == 'rotational':
 			
 			p_i_minus_1 = transformation[:3, 3].T
 			
 			# update j
-			j_r = z_i_minus_1.multiply_elementwise(p - p_i_minus_1)
-			stack = np.vstack((j_r, z_i_minus_1))
+			p_diff = p - p_i_minus_1
+			
+			j_r = z_i_minus_1.T @ p_diff
+			
+			stack = np.vstack((j_r[2, :], z_i_minus_1))
 			
 			j[:, i] = stack.flatten()
 			

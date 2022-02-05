@@ -3,34 +3,36 @@ import sympy as sp
 
 from lib.direct_kinematic import Link, DirectKinematic
 
-q1, q2, q3, q4 = sp.symbols('q1 q2 q3 q4')
+q1, q2 = sp.symbols('q1 q2')
+q3, q4 = sp.symbols('q3 q4')
+q5, q6 = sp.symbols('q5 q6')
 
-# l2 = .2
-# l3 = .15
-# l4 = .1
-# l5 = .08
-#
-# d3 = .1
 
-j0 = Link([q1, 0, .2, 0])
-j1 = Link([q2, 0, .15, np.pi])
-j2 = Link([q3, .2, 0, 0])
-j3 = Link([q4, .08, 0, 0])
+j0 = Link([q1, 450, 150, np.pi/2])
+j1 = Link([q2, 0, 590, np.pi])
+j2 = Link([q3, 0, 130, -np.pi/2])
+j3 = Link([q4, 647, 0, -np.pi/2])
+j4 = Link([q5, 0, 0, np.pi/2])
+j5 = Link([q6, 0, 10, 0])
 
-dk = DirectKinematic([j0, j1, j2, j3])
+dk = DirectKinematic([j0, j1, j2, j3, j4, j5])
 
 # sp.print_jscode(dk.get_htm([
-# 	np.pi/4,
-# 	np.pi/4,
 # 	0,
-# 	np.pi / 2,
+# 	0,
+# 	0,
+# 	0,
+# 	0,
+# 	0
 # ]).evalf())
 
-joint_values = np.array([
-	np.pi/4,
-	np.pi/4,
-	0,
-	np.pi / 2,
-])
+# sp.print_jscode(dk.get_transformation(1, 2))
 
-sp.pprint(dk.get_jacobian(joint_values))
+# joint_values = np.array([
+# 	np.pi,
+# 	np.pi
+# ])
+#
+jacobian = sp.matrix2numpy(dk.get_jacobian([0, 0, 0, 0, 0, 0]), dtype=np.float64)
+
+print(np.linalg.pinv(jacobian))
