@@ -80,6 +80,28 @@ class DirectKinematic:
 	def __init__(self, links):
 		self.links = links
 		self.generic_htm = compute_transformation(links, 0, len(self.links))
+		self.generic_jacobian = self.compute_generic_jacobian()
+	
+	def compute_generic_jacobian(self):
+		htm = self.generic_htm
+		
+		end_effector_pos = htm[:3, 3]
+		
+		# derive each position (x, y, z) with respect of all thetas
+		# J = Matrix 2xjoints
+	
+		jacobian = sp.Matrix(sp.symarray('j', (3, len(self.links))))
+		
+		for i in range(len(self.links)):
+			d_qi = sp.diff(end_effector_pos, f'q{i + 1}').T
+			
+			for j in range(3):
+				jacobian[j, i] = d_qi[j]
+		
+		return jacobian
+		
+	def get_generic_jacobian(self):
+		return self.generic_jacobian
 	
 	"""
 			Returns the robot homogeneous transformation matrix in generic form.
@@ -108,7 +130,7 @@ class DirectKinematic:
 		).evalf()
 	
 	"""
-		Compute the Jacobian matrix.
+		Compute the Jacobian matrix considering the rotations.
 	"""
 	def get_jacobian(self, joint_angles):
 		htm = self.get_htm(joint_angles)
