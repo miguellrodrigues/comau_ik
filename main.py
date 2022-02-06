@@ -44,7 +44,7 @@ sp.print_jscode(dk.get_htm([
 # print(np.linalg.pinv(jacobian))
 #
 
-initial_guess = [1, 2, 0, 0, 0, 0]
+initial_guess = [0, 0, 0, 0, 0, 0]
 theta_i = initial_guess
 
 epsilon = .1
@@ -64,9 +64,12 @@ def n(r):
 	)
 
 
+generic_jacobian = dk.get_generic_jacobian()
+
+
 while error >= epsilon:
-	jacobian = sp.matrix2numpy(
-		dk.get_generic_jacobian().subs(
+	jacobian = np.array(
+		generic_jacobian.subs(
 			joint_angles_subs(theta_i)
 		).evalf(),
 		dtype=np.float64

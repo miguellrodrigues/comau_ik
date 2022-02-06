@@ -39,7 +39,7 @@ class Link:
 		
 		if joint_angles is not None:
 			tm = tm.subs(joint_angles)
-			
+		
 		return tm
 	
 	"""
@@ -86,20 +86,26 @@ class DirectKinematic:
 		htm = self.generic_htm
 		
 		end_effector_pos = htm[:3, 3]
+		# end_effector_rot = htm[:3, :3]
 		
 		# derive each position (x, y, z) with respect of all thetas
 		# J = Matrix 2xjoints
-	
+		
 		jacobian = sp.Matrix(sp.symarray('j', (3, len(self.links))))
 		
 		for i in range(len(self.links)):
-			d_qi = sp.diff(end_effector_pos, f'q{i + 1}').T
+			d_p_qi = sp.diff(end_effector_pos, f'q{i + 1}').T
+			# d_r_qi = sp.diff(end_effector_rot, f'q{i + 1}').T
+			
+			# rots = [d_r_qi[i, i] for i in range(3)]
+			
+			# stack = np.vstack((d_p_qi, rots))
 			
 			for j in range(3):
-				jacobian[j, i] = d_qi[j]
+				jacobian[j, i] = d_p_qi[j]
 		
 		return jacobian
-		
+	
 	def get_generic_jacobian(self):
 		return self.generic_jacobian
 	
@@ -132,9 +138,10 @@ class DirectKinematic:
 	"""
 		Compute the Jacobian matrix considering the rotations.
 	"""
+	
 	def get_jacobian(self, joint_angles):
 		htm = self.get_htm(joint_angles)
-
+		
 		# for rotational joints, the Jacobian is [z_{i - 1} * (p - p_{i - 1}); z_{i - 1}]
 		# for prismatic joints, the jacobian is [z_{i - 1}; 0]
 		
@@ -159,9 +166,9 @@ class DirectKinematic:
 			j_r = np.cross(z_i_minus_1.T, p_diff)
 			
 			stack = np.vstack((j_r[0], z_i_minus_1.T))
-
+			
 			j[:, i - 1] = stack.flatten()
-	
+			
 			transformation = self.links[i - 1].get_tm(joint_angles_subs(joint_angles))
 			# transformation = self.get_transformation(i-1, i, joint_angles_subs(joint_angles))
 			
