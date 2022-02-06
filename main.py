@@ -7,7 +7,6 @@ q1, q2 = sp.symbols('q1 q2')
 q3, q4 = sp.symbols('q3 q4')
 q5, q6 = sp.symbols('q3 q4')
 
-l1, l2, l3 = sp.symbols('l1 l2 l3')
 
 j0 = Link([q1, 45, 15, np.pi/2])
 j1 = Link([q2, 0, 59, np.pi])
@@ -41,17 +40,17 @@ sp.print_jscode(dk.get_htm([
 # print(np.linalg.pinv(jacobian))
 #
 
-initial_guess = [1, 1, 1]
+initial_guess = [-1, 1, 1]
 theta_i = initial_guess
 
 epsilon = .1
 error = 1
 
 desired_pose = [
-	10, -5, 100
+	10.6, -10.6, 117, 0, -.7, 0
 ]
 
-pose_error = np.array([.0 for _ in range(3)])
+pose_error = np.array([.0 for _ in range(6)])
 
 
 def n(r):
@@ -71,7 +70,7 @@ while error >= epsilon:
 		).evalf(),
 		dtype=np.float64
 	)
-	
+
 	jacobian_pinv = np.linalg.pinv(jacobian)
 	current_pose = dk.get_htm(theta_i)
 

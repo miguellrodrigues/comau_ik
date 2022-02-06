@@ -86,24 +86,21 @@ class DirectKinematic:
 		htm = self.generic_htm
 		
 		end_effector_pos = htm[:3, 3]
-		# end_effector_rot = htm[:3, :3]
+		end_effector_rot = htm[:3, :3]
 		
 		# derive each position (x, y, z) with respect of all thetas
 		# J = Matrix 2xjoints
 		
-		jacobian = sp.Matrix(sp.symarray('j', (3, len(self.links))))
+		jacobian = sp.Matrix(sp.symarray('j', (6, len(self.links))))
 		
 		for i in range(len(self.links)):
 			d_p_qi = sp.diff(end_effector_pos, f'q{i + 1}').T
-			# d_r_qi = sp.diff(end_effector_rot, f'q{i + 1}').T
-			
-			# rots = [d_r_qi[i, i] for i in range(3)]
-			
-			# stack = np.vstack((d_p_qi, rots))
-			
+			d_r_qi = sp.diff(end_effector_rot, f'q{i + 1}')
+
 			for j in range(3):
 				jacobian[j, i] = d_p_qi[j]
-		
+				jacobian[j+3, i] = d_r_qi[j, j]
+
 		return jacobian
 	
 	def get_generic_jacobian(self):
