@@ -144,7 +144,5 @@ class DirectKinematic:
 			
 			p_i_minus_1 = transformation[:3, 3]
 			z_i_minus_1 = transformation[:3, 2]
-
-		sp.print_jscode(sp.simplify(j))
 		
 		return j
