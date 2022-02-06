@@ -12,19 +12,16 @@ l1, l2, l3 = sp.symbols('l1 l2 l3')
 j0 = Link([q1, 45, 15, np.pi/2])
 j1 = Link([q2, 0, 59, np.pi])
 j2 = Link([q3, 0, 13, -np.pi/2])
-j3 = Link([q4, 64, 0, -np.pi/2])
-j4 = Link([q5, 0, 0, np.pi/2])
-j5 = Link([q6, 0, 10, 0])
+# j3 = Link([q4, 64, 0, -np.pi/2])
+# j4 = Link([q5, 0, 0, np.pi/2])
+# j5 = Link([q6, 0, 10, 0])
 
-dk = DirectKinematic([j0, j1, j2, j3, j4, j5])
+dk = DirectKinematic([j0, j1, j2])
 
 sp.print_jscode(dk.get_htm([
+	-np.pi/4,
 	np.pi/2,
-	np.pi/2,
 	0,
-	0,
-	0,
-	0
 ]).evalf())
 
 #
@@ -44,14 +41,14 @@ sp.print_jscode(dk.get_htm([
 # print(np.linalg.pinv(jacobian))
 #
 
-initial_guess = [0, 0, 0, 0, 0, 0]
+initial_guess = [1, 1, 1]
 theta_i = initial_guess
 
 epsilon = .1
 error = 1
 
 desired_pose = [
-	0, 79, 127
+	10, -5, 100
 ]
 
 pose_error = np.array([.0 for _ in range(3)])
@@ -76,7 +73,6 @@ while error >= epsilon:
 	)
 	
 	jacobian_pinv = np.linalg.pinv(jacobian)
-
 	current_pose = dk.get_htm(theta_i)
 
 	for i in range(3):
