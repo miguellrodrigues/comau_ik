@@ -40,18 +40,18 @@ sp.print_jscode(dk.get_htm([
 # print(np.linalg.pinv(jacobian))
 #
 
-initial_guess = [2, 2, 0]
+initial_guess = [1.57028352, 1.52039114, -.04836475]
 theta_i = initial_guess
 
 epsilon = .1
 error = 1
 
 desired_pose = [
-	0, 18, 117,
+	0, 15, 117,
 	0, 0, 0
 ]
 
-pose_error = [.0 for _ in range(6)]
+pose_error = np.array([.0 for _ in range(6)])
 
 
 def n(r):
@@ -61,7 +61,7 @@ def n(r):
 	)
 
 
-while error > epsilon:
+while error >= epsilon:
 	jacobian = sp.matrix2numpy(dk.get_jacobian(theta_i), dtype=np.float64)
 	jacobian_pinv = np.linalg.pinv(jacobian)
 
@@ -69,15 +69,12 @@ while error > epsilon:
 
 	for i in range(3):
 		pose_error[i] = desired_pose[i] - current_pose[i, 3]
-
-	pose_error[3] = desired_pose[3] - current_pose[0, 0]
-	pose_error[4] = desired_pose[4] - current_pose[1, 1]
-	pose_error[5] = desired_pose[5] - current_pose[2, 2]
+		# pose_error[i+3] = desired_pose[i+3] - current_pose[i, i]
 
 	# print(current_pose[:3, 3])
 
 	theta_i += (jacobian_pinv @ pose_error)
-	error = np.sum(np.abs(pose_error[:3]))
+	error = np.linalg.norm(pose_error)  # np.sum(np.abs(pose_error[:3]))
 
 	print(current_pose[:3, 3])
 
