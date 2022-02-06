@@ -127,25 +127,28 @@ class DirectKinematic:
 		j = sp.Matrix(sp.symarray('j', (6, len_joints)))
 		
 		# position of the end-effector
-		p = htm[:3, 3].T
+		p = htm[:3, 3]
 		
-		for i in range(len_joints):
-			# compute the transformation from 0 to ith link
-			transformation = self.get_transformation(i, i + 1, joint_angles_subs(joint_angles))
-			z_i_minus_1 = transformation[:3, 2].T
+		p_i_minus_1 = sp.Matrix([0, 0, 0])
+		z_i_minus_1 = sp.Matrix([0, 0, 1])
+		
+		for i in range(1, len_joints + 1):
+			j_r = (z_i_minus_1 @ (p - p_i_minus_1).T).T
+			
+			stack = np.vstack((j_r[:, 2], z_i_minus_1))
+			j[:, i - 1] = stack.flatten()
+	
+			transformation = self.get_transformation(i-1, i, joint_angles_subs(joint_angles))
+			
+			p_i_minus_1 = transformation[:3, 3]
+			z_i_minus_1 = transformation[:3, 2]
+		
+		# verificar o calculo do jacobiano
+		# desse jeito ta muito gambiarrado
+		
+		aux = j[0, :]
 
-			# All the joints are rotational (in this case)
-			# if self.links[i].link_type == 'rotational':
-			
-			p_i_minus_1 = transformation[:3, 3].T
-			
-			# update j
-			p_diff = p - p_i_minus_1
-			
-			j_r = z_i_minus_1.T @ p_diff
-			
-			stack = np.vstack((j_r[2, :], z_i_minus_1))
-			
-			j[:, i] = stack.flatten()
-			
+		j[0, :] = -1 * j[1, :].copy()
+		j[1, :] = aux
+		
 		return j
