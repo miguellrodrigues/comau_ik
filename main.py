@@ -7,7 +7,6 @@ q1, q2 = sp.symbols('q1 q2')
 q3, q4 = sp.symbols('q3 q4')
 q5, q6 = sp.symbols('q3 q4')
 
-l1, l2, l3 = sp.symbols('l1 l2 l3')
 
 j0 = Link([q1, 45, 15, np.pi/2])
 j1 = Link([q2, 0, 59, np.pi])
@@ -24,22 +23,7 @@ sp.print_jscode(dk.get_htm([
 	0,
 ]).evalf())
 
-#
-# t01 = dk.get_transformation(0, 1)
-# sp.print_jscode(t01)
-# dk.get_jacobian([q1, q2])
-#
-# sp.print_jscode(sp.simplify(t01))
-
-# joint_values = np.array([
-# 	np.pi,
-# 	np.pi
-# ])
-#
-
-#
-# print(np.linalg.pinv(jacobian))
-#
+print(' ')
 
 initial_guess = [1, 1, 1]
 theta_i = initial_guess
