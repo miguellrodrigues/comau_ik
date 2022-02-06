@@ -3,25 +3,22 @@ import sympy as sp
 
 from lib.direct_kinematic import Link, DirectKinematic
 
-q1, q2, q3 = sp.symbols('q1 q2 q3')
+q1, q2 = sp.symbols('q1 q2')
 l1, l2 = sp.symbols('l1 l2')
 
-
-j0 = Link([q1, 0, 10, np.pi])
-j1 = Link([q2, 0, 10, -np.pi/2])
-j2 = Link([q3, 0, 10, 0])
+j0 = Link([q1, 0, l1, 0])
+j1 = Link([q2, 0, l2, 0])
 
 # j3 = Link([q4, 647, 0, -np.pi/2])
 # j4 = Link([q5, 0, 0, np.pi/2])
 # j5 = Link([q6, 0, 10, 0])
 
-dk = DirectKinematic([j0, j1, j2])
+dk = DirectKinematic([j0, j1])
 
-sp.print_jscode(dk.get_htm([
-	-np.pi/2,
-	np.pi/2,
-	0,
-]).evalf())
+# sp.print_jscode(dk.get_htm([
+# 	-np.pi/2,
+# 	np.pi/2,
+# ]).evalf())
 
 #
 # t01 = dk.get_transformation(0, 1)
@@ -40,14 +37,14 @@ sp.print_jscode(dk.get_htm([
 # print(np.linalg.pinv(jacobian))
 #
 
-initial_guess = [-2, 2, 0]
+initial_guess = [0, 0]
 theta_i = initial_guess
 
 epsilon = .1
 error = 1
 
 desired_pose = [
-	-20, -10, 0,
+	10, -10, 0,
 	0, 0, 0
 ]
 
@@ -60,8 +57,9 @@ def n(r):
 		np.cos(r)
 	)
 
+dk.get_jacobian([q1, q2])
 
-while error > epsilon:
+while error < epsilon:
 	jacobian = sp.matrix2numpy(dk.get_jacobian(theta_i), dtype=np.float64)
 	jacobian_pinv = np.linalg.pinv(jacobian)
 
@@ -74,10 +72,11 @@ while error > epsilon:
 	# pose_error[4] = desired_pose[4] - current_pose[1, 1]
 	# pose_error[5] = desired_pose[5] - current_pose[2, 2]
 
-	print(current_pose[:3, 3])
+	# print(current_pose[:3, 3])
 
 	theta_i += (jacobian_pinv @ pose_error)
 	error = np.sum(np.abs(pose_error[:3]))
+
 
 t = n(
 	np.array(theta_i, dtype=np.float64)

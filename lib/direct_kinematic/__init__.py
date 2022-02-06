@@ -133,22 +133,18 @@ class DirectKinematic:
 		z_i_minus_1 = sp.Matrix([0, 0, 1])
 		
 		for i in range(1, len_joints + 1):
-			j_r = (z_i_minus_1 @ (p - p_i_minus_1).T).T
+			p_diff = (p - p_i_minus_1).T
+			j_r = np.cross(z_i_minus_1.T, p_diff)
 			
-			stack = np.vstack((j_r[:, 2], z_i_minus_1))
+			stack = np.vstack((j_r[0], z_i_minus_1.T))
+
 			j[:, i - 1] = stack.flatten()
 	
 			transformation = self.get_transformation(i-1, i, joint_angles_subs(joint_angles))
 			
 			p_i_minus_1 = transformation[:3, 3]
 			z_i_minus_1 = transformation[:3, 2]
-		
-		# verificar o calculo do jacobiano
-		# desse jeito ta muito gambiarrado
-		
-		aux = j[0, :]
 
-		j[0, :] = -1 * j[1, :].copy()
-		j[1, :] = aux
+		sp.print_jscode(sp.simplify(j))
 		
 		return j
