@@ -40,14 +40,14 @@ sp.print_jscode(dk.get_htm([
 # print(np.linalg.pinv(jacobian))
 #
 
-initial_guess = [1, 1, 0]
+initial_guess = [1.57103511, 1.56984912, -0.00534193]
 theta_i = initial_guess
 
 epsilon = .1
 error = 1
 
 desired_pose = [
-	0, 15, 117,
+	0, 18, 117,
 	0, 0, 0
 ]
 
@@ -79,7 +79,7 @@ while error > epsilon:
 	theta_i += (jacobian_pinv @ pose_error)
 	error = np.sum(np.abs(pose_error[:3]))
 
-	print(current_pose[:, 3])
+	print(current_pose[:3, 3])
 
 
 t = n(

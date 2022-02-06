@@ -140,7 +140,8 @@ class DirectKinematic:
 
 			j[:, i - 1] = stack.flatten()
 	
-			transformation = self.get_transformation(i-1, i, joint_angles_subs(joint_angles))
+			transformation = self.links[i - 1].get_tm(joint_angles_subs(joint_angles))
+			# transformation = self.get_transformation(i-1, i, joint_angles_subs(joint_angles))
 			
 			p_i_minus_1 = transformation[:3, 3]
 			z_i_minus_1 = transformation[:3, 2]
