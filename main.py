@@ -10,8 +10,8 @@ q5, q6 = sp.symbols('q3 q4')
 j0 = Link([q1, 45, 15, np.pi/2])
 j1 = Link([q2, 0, 59, np.pi])
 j2 = Link([q3, 0, 13, -np.pi/2])
-
-# j3 = Link([q4, 647, 0, -np.pi/2])
+#
+# j3 = Link([q4, 64, 0, -np.pi/2])
 # j4 = Link([q5, 0, 0, np.pi/2])
 # j5 = Link([q6, 0, 10, 0])
 
@@ -40,7 +40,7 @@ sp.print_jscode(dk.get_htm([
 # print(np.linalg.pinv(jacobian))
 #
 
-initial_guess = [1.57103511, 1.56984912, -0.00534193]
+initial_guess = [2, 2, 0]
 theta_i = initial_guess
 
 epsilon = .1
