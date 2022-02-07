@@ -103,19 +103,13 @@ class DirectKinematic:
 		# derive each position (x, y, z) with respect of all thetas
 		# J = Matrix 2xjoints
 		
-		jacobian = sp.Matrix(sp.symarray('j', (6, len(self.links))))
-		r0 = sp.Matrix([0, 0, 1])
-		
+		jacobian = sp.Matrix(sp.symarray('j', (3, len(self.links))))
+
 		for i in range(len(self.links)):
 			d_p_qi = sp.diff(end_effector_pos, f'q{i + 1}').T
 			
 			for j in range(3):
 				jacobian[j, i] = d_p_qi[j]
-			
-			jacobian[3:, i] = r0
-			
-			transformation = self.links[i].get_tm()
-			r0 = transformation[:3, 2]
 		
 		return jacobian
 	
