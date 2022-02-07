@@ -37,7 +37,7 @@ def arbitrary_vector_rotation_matrix(theta, v):
 	Rotation matrix around an arbitrary vector
 	"""
 	
-	u = v
+	u = np.linalg.norm(np.array(v))
 	su = np.array([
 		[0, -u[2], u[1]],
 		[u[2], 0, -u[0]],
@@ -45,6 +45,10 @@ def arbitrary_vector_rotation_matrix(theta, v):
 	])
 	
 	return sp.eye(3) + sp.sin(theta) * su + (1 - sp.cos(theta)) * (su @ su)
+
+
+def g_inv(theta, w):
+	return ((1/theta) * sp.eye(3)) - w/2 + (1/theta - .5*(sp.cot(theta/2))) * (w * w)
 
 
 def translation_matrix(dx, dy, dz):

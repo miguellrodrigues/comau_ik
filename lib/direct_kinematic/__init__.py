@@ -103,27 +103,22 @@ def norm(r):
 
 def omega(r):
 	if r == np.eye(3):
-		return r, np.pi
+		return r, 0
 	
 	tr = np.sum(r[i, i] for i in range(3))
-	
-	theta = sp.symbols('theta')
-	
-	e = sp.Eq(
-		1 + 2 * sp.cos(theta),
-		tr
-	)
-	
-	s = sp.solvers.solve(e, theta)
-	
-	t = next(s for s in s if s != 0)
-	
+
 	if tr == -1:
-		omega_hat = (1 / (np.sqrt(2 * (1 + r[2, 2]))) * np.array([r[0, 2], r[1, 2], 1 + r[2, 2]]))
+		omega_hat = (1 / (sp.sqrt(2 * (1 + r[2, 2]))) * np.array([r[0, 2], r[1, 2], 1 + r[2, 2]]))
+		
+		return omega_hat, np.pi
 	else:
-		omega_hat = (1 / (2 * sp.sin(t))) * (r - r.T)
-	
-	return omega_hat, norm(t)
+		theta = sp.acos(
+			(1/2) * (tr - 1)
+		)
+		
+		omega_hat = (1 / (2 * sp.sin(theta)) * (r - r.T))
+		
+		return omega_hat, theta
 
 
 class DirectKinematic:
