@@ -18,21 +18,22 @@ j2 = Link([q3, 0, 13, -np.pi/2])
 dk = DirectKinematic([j0, j1, j2])
 
 sp.print_jscode(dk.get_htm([
-	-np.pi/4,
-	np.pi/2,
+	0,
+	0,
 	0,
 ]).evalf())
 
 print(' ')
 
-initial_guess = [1, 1, 1]
+
+initial_guess = [0.1, 0.1, 0.1]
 theta_i = initial_guess
 
 epsilon = .1
 error = 1
 
 desired_pose = [
-	10, -5, 100
+	87, 0, 47
 ]
 
 pose_error = np.array([.0 for _ in range(3)])
