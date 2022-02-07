@@ -97,6 +97,35 @@ def joint_angles_subs(joint_angles):
 	return [(f'q{i + 1}', joint_angles[i]) for i in range(len(joint_angles))]
 
 
+def norm(r):
+	return sp.atan2(sp.sin(r) ,sp.cos(r))
+
+
+def omega(r):
+	if r == np.eye(3):
+		return r, np.pi
+	
+	tr = np.sum(r[i, i] for i in range(3))
+	
+	theta = sp.symbols('theta')
+	
+	e = sp.Eq(
+		1 + 2 * sp.cos(theta),
+		tr
+	)
+	
+	s = sp.solvers.solve(e, theta)
+	
+	t = next(s for s in s if s != 0)
+	
+	if tr == -1:
+		omega_hat = (1 / (np.sqrt(2 * (1 + r[2, 2]))) * np.array([r[0, 2], r[1, 2], 1 + r[2, 2]]))
+	else:
+		omega_hat = (1 / (2 * sp.sin(t))) * (r - r.T)
+	
+	return omega_hat, norm(t)
+
+
 class DirectKinematic:
 	def __init__(self, links):
 		self.links = links
