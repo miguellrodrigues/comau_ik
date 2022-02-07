@@ -34,7 +34,7 @@ class Link:
 		
 		return rz @ tz @ tx @ rx
 	
-	def get_tm(self, joint_angles):
+	def get_tm(self, joint_angles=None):
 		tm = self.transformation_matrix
 		
 		if joint_angles is not None:
@@ -76,6 +76,19 @@ def joint_angles_subs(joint_angles):
 	return [(f'q{i + 1}', joint_angles[i]) for i in range(len(joint_angles))]
 
 
+def u(r):
+	r33 = r[2, 2]
+	
+	a = 1 / (sp.sqrt(2 * (1 + r33)))
+	b = sp.Matrix([
+		[r[0, 2]],
+		[r[1, 2]],
+		[1 + r33]
+	])
+	
+	return a * b
+
+
 class DirectKinematic:
 	def __init__(self, links):
 		self.links = links
@@ -90,13 +103,19 @@ class DirectKinematic:
 		# derive each position (x, y, z) with respect of all thetas
 		# J = Matrix 2xjoints
 		
-		jacobian = sp.Matrix(sp.symarray('j', (3, len(self.links))))
+		jacobian = sp.Matrix(sp.symarray('j', (6, len(self.links))))
+		r0 = sp.Matrix([0, 0, 1])
 		
 		for i in range(len(self.links)):
 			d_p_qi = sp.diff(end_effector_pos, f'q{i + 1}').T
-
+			
 			for j in range(3):
 				jacobian[j, i] = d_p_qi[j]
+			
+			jacobian[3:, i] = r0
+			
+			transformation = self.links[i].get_tm()
+			r0 = transformation[:3, 2]
 		
 		return jacobian
 	
