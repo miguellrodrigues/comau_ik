@@ -34,7 +34,7 @@ class Link:
 		
 		return rz @ tz @ tx @ rx
 	
-	def get_tm(self, joint_angles):
+	def get_tm(self, joint_angles=None):
 		tm = self.transformation_matrix
 		
 		if joint_angles is not None:
@@ -70,6 +70,24 @@ def compute_transformation(links, start, end, joint_angles=None):
 		tm = tm @ tm_i
 	
 	return tm
+	
+	
+def inverse_transformation(tm):
+	inverse = sp.eye(4)
+	
+	transposed = tm.T
+	
+	v_t = tm[:3, 3]  # translation vector
+	v_r = transposed[:3, :3]  # rotation matrix
+	
+	# multiply each column of vr with vt
+	
+	v_t_i = -v_r @ v_t
+	
+	inverse[:3, 3] = v_t_i
+	inverse[:3, :3] = v_r
+	
+	return inverse
 
 
 def joint_angles_subs(joint_angles):
@@ -86,20 +104,17 @@ class DirectKinematic:
 		htm = self.generic_htm
 		
 		end_effector_pos = htm[:3, 3]
-		end_effector_rot = htm[:3, :3]
-		
+
 		# derive each position (x, y, z) with respect of all thetas
 		# J = Matrix 2xjoints
 		
-		jacobian = sp.Matrix(sp.symarray('j', (6, len(self.links))))
+		jacobian = sp.Matrix(sp.symarray('j', (2, len(self.links))))
 		
 		for i in range(len(self.links)):
 			d_p_qi = sp.diff(end_effector_pos, f'q{i + 1}').T
-			d_r_qi = sp.diff(end_effector_rot, f'q{i + 1}')
 
-			for j in range(3):
+			for j in range(2):
 				jacobian[j, i] = d_p_qi[j]
-				jacobian[j+3, i] = d_r_qi[j, j]
 
 		return jacobian
 	
