@@ -1,8 +1,7 @@
 import numpy as np
 import sympy as sp
-
 from lib.direct_kinematic import Link, DirectKinematic, joint_angles_subs, inverse_transformation
-from lib.frame import translation_matrix
+from lib.frame import translation_matrix, x_rotation_matrix
 
 
 def n(r):
@@ -17,49 +16,47 @@ q3, q4 = sp.symbols('q3 q4')
 q5, q6 = sp.symbols('q3 q4')
 
 l1, l2 = sp.symbols('l1 l2')
+a1, a2, a3 = sp.symbols('a1 a2 a3')
 
-j0 = Link([q1, 0, 10, 0])
+j0 = Link([q1, 10, 0, sp.pi/2])
 j1 = Link([q2, 0, 10, 0])
 
 dk = DirectKinematic([j0, j1])
 
-initial_guess = [.0, .0]
+sp.print_jscode(
+	dk.get_htm([-np.pi, 0])
+)
+
+initial_guess = [.2, .1]
 theta_i = initial_guess
 
-epsilon_vb = 1
+epsilon_vb = 1e-3
 error = 1
 
-desired_pose = translation_matrix(5, 10, 0)
-
-vb = np.eye(4)
+desired_pose = [-10, 0, 10, 0, 0, 0]  # d
+pose_error = np.array([0, 0, 0, 0, 0, 0])
 
 generic_jacobian = dk.get_generic_jacobian()
-generic_htm_inverse = inverse_transformation(dk.get_generic_htm())
 
 while error >= epsilon_vb:
-	Tbs = generic_htm_inverse.subs(joint_angles_subs(theta_i)).evalf()
-	Tbd = sp.matrix2numpy(
-		Tbs @ desired_pose,
-		dtype=np.float64
-	)
-	
-	d_tbd = np.diag(Tbd)
-	v = np.log(d_tbd)
-	
-	e = np.sum(v**2)
-
 	jacobian = np.array(
 		generic_jacobian.subs(
 			joint_angles_subs(theta_i)
 		).evalf(),
 		dtype=np.float64
 	)
+	
+	current_pose = dk.get_htm(theta_i)
+	
+	for i in range(3):
+		pose_error[i] = desired_pose[i] - current_pose[i, 3]
+		pose_error[i+3] = desired_pose[i+3] - current_pose[i, i]
 
 	jacobian_pinv = np.linalg.pinv(jacobian)
-	theta_i += jacobian_pinv.ravel() @ v
-	print(theta_i)
+	theta_i += jacobian_pinv @ pose_error
 	
-
+	error = np.sum(np.abs(pose_error))
+	print(error)
 
 t = n(
 	np.array(theta_i, dtype=np.float64)

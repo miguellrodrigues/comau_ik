@@ -63,6 +63,9 @@ class Link:
 
 
 def compute_transformation(links, start, end, joint_angles=None):
+	if end == 0:
+		return sp.eye(4)
+	
 	tm = links[start].get_tm(joint_angles)
 	
 	for i in range(start + 1, end):
@@ -98,7 +101,7 @@ class DirectKinematic:
 	def __init__(self, links):
 		self.links = links
 		self.generic_htm = compute_transformation(links, 0, len(self.links))
-		self.generic_jacobian = self.compute_generic_jacobian()
+		self.generic_jacobian = self.compute_generic_jacobian()  # self.get_jacobian([])
 	
 	def compute_generic_jacobian(self):
 		htm = self.generic_htm
@@ -108,14 +111,20 @@ class DirectKinematic:
 		# derive each position (x, y, z) with respect of all thetas
 		# J = Matrix 2xjoints
 		
-		jacobian = sp.Matrix(sp.symarray('j', (2, len(self.links))))
+		jacobian = sp.Matrix(sp.symarray('j', (6, len(self.links))))
+		r0 = sp.Matrix([0, 0, 1])
 		
 		for i in range(len(self.links)):
 			d_p_qi = sp.diff(end_effector_pos, f'q{i + 1}').T
 
-			for j in range(2):
+			for j in range(3):
 				jacobian[j, i] = d_p_qi[j]
-
+			
+			jacobian[3:, i] = r0
+			
+			transformation = self.links[i].get_tm()
+			r0 = transformation[:3, 2]
+	
 		return jacobian
 	
 	def get_generic_jacobian(self):
@@ -151,8 +160,8 @@ class DirectKinematic:
 		Compute the Jacobian matrix considering the rotations.
 	"""
 	
-	def get_jacobian(self, joint_angles):
-		htm = self.get_htm(joint_angles)
+	def get_jacobian(self):
+		htm = self.get_generic_htm()
 		
 		# for rotational joints, the Jacobian is [z_{i - 1} * (p - p_{i - 1}); z_{i - 1}]
 		# for prismatic joints, the jacobian is [z_{i - 1}; 0]
@@ -163,7 +172,7 @@ class DirectKinematic:
 		
 		# Compute the Jacobian matrix
 		
-		len_joints = len(joint_angles)
+		len_joints = len(self.links)
 		
 		j = sp.Matrix(sp.symarray('j', (6, len_joints)))
 		
@@ -176,12 +185,12 @@ class DirectKinematic:
 		for i in range(1, len_joints + 1):
 			p_diff = (p - p_i_minus_1).T
 			j_r = np.cross(z_i_minus_1.T, p_diff)
-			
+
 			stack = np.vstack((j_r[0], z_i_minus_1.T))
 			
 			j[:, i - 1] = stack.flatten()
 			
-			transformation = self.links[i - 1].get_tm(joint_angles_subs(joint_angles))
+			transformation = self.links[i - 1].get_tm()
 			# transformation = self.get_transformation(i-1, i, joint_angles_subs(joint_angles))
 			
 			p_i_minus_1 = transformation[:3, 3]
